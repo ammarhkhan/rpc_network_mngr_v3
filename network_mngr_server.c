@@ -5,71 +5,115 @@
  */
 
 #include "network_mngr.h"
+#include <sys/sysinfo.h>
+#include <pwd.h>
+#include <stdio.h>
 
-char **
-user_logins_1_svc(void *argp, struct svc_req *rqstp)
-{
-	static char * result;
-
-	/*
-	 * insert server code here
-	 */
-
-	return &result;
-}
+#define MAX_LEN 100
 
 char **
 date_1_svc(long *argp, struct svc_req *rqstp)
 {
-	static char * result;
+  struct tm *timeptr;
+  time_t clock;
+  static char *ptr;
+  static char err[] = "Invalid Response \0";
+  static char s[MAX_LEN];
 
-	/*
-	 * insert server code here
-	 */
+  clock = time(0);
+  timeptr = localtime(&clock);
+  switch(*argp)
+  {
+  case 1:strftime(s,MAX_LEN,"%A, %B %d, %Y",timeptr);
+    ptr=s;
+    break;
 
-	return &result;
+  case 2:strftime(s,MAX_LEN,"%T",timeptr);
+    ptr=s;
+    break;
+  
+  case 3:strftime(s,MAX_LEN,"%A, %B %d, %Y - %T",timeptr);
+    ptr=s;
+    break;
+
+  default: ptr=err;
+    break;
+  }
+
+  return(&ptr);
 }
 
 double *
 cpu_usage_1_svc(void *argp, struct svc_req *rqstp)
 {
-	static double  result;
+  unsigned long long lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle;
+  FILE* file = fopen("/proc/stat", "r");
+  fscanf(file, "cpu %llu %llu %llu %llu", &lastTotalUser, &lastTotalUserLow,
+      &lastTotalSys, &lastTotalIdle);
+  fclose(file);
 
-	/*
-	 * insert server code here
-	 */
+  sleep(2);
+  static double percent;
+  unsigned long long totalUser, totalUserLow, totalSys, totalIdle, total;
 
-	return &result;
+  file = fopen("/proc/stat", "r");
+  fscanf(file, "cpu %llu %llu %llu %llu", &totalUser, &totalUserLow,
+      &totalSys, &totalIdle);
+  fclose(file);
+
+  if (totalUser < lastTotalUser || totalUserLow < lastTotalUserLow ||
+      totalSys < lastTotalSys || totalIdle < lastTotalIdle){
+      //Overflow detection. Just skip this value.
+      percent = -1.0;
+  }
+  else{
+      total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) +
+          (totalSys - lastTotalSys);
+      percent = total;
+      total += (totalIdle - lastTotalIdle);
+      percent /= total;
+      percent *= 100;
+  }
+
+  return &percent;
 }
 
 double *
 mem_usage_1_svc(void *argp, struct svc_req *rqstp)
 {
-	static double  result;
-
-	/*
-	 * insert server code here
-	 */
-
-	return &result;
+  static double percent;
+  struct sysinfo memInfo;
+  sysinfo(&memInfo);
+  long long totalPhysMem = memInfo.totalram;
+  long long physMemUsed = memInfo.totalram - memInfo.freeram;
+  percent = (double)physMemUsed/(double)totalPhysMem*100;
+  //percent = totalPhysMem;
+  return &percent;
 }
 
 double *
 load_procs_per_min_1_svc(void *argp, struct svc_req *rqstp)
 {
 	static double  result;
+	struct passwd *ptr;
 
-	/*
-	 * insert server code here
-	 */
+	 setpwent();
 
-	return &result;
-}
+	while(1){
+		//returns NULL when it reaches the end
+		ptr = getpwent();
 
-system_statistics *
-get_current_system_stats_1_svc(void *argp, struct svc_req *rqstp)
-{
-	static system_statistics  result;
+		if(ptr==NULL){
+		break;
+	}
+
+	//print out user ID and username
+	//-5 included to left align 5 column field
+	printf("%-5u %s\n", ptr->pw_uid, ptr->pw_name);
+
+	}
+
+	 endpwent();
 
 	/*
 	 * insert server code here
