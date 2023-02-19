@@ -5,11 +5,51 @@
  */
 
 #include "network_mngr.h"
+#include <time.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <sys/sysinfo.h>
 #include <pwd.h>
-#include <stdio.h>
+#include <string.h>
 
 #define MAX_LEN 100
+
+char **
+user_logins_1_svc(void *argp, struct svc_req *rqstp)
+{
+	static char * result;
+	struct passwd *ptr;
+
+	 setpwent();
+
+	// while(1){
+	// 	ptr = getpwent();
+
+	// 	if(ptr==NULL){
+	// 	break;
+	// }
+
+	// char *userName = ptr->pw_name;
+
+	// strcpy(result, userName);
+
+	// //print out user ID and username
+	// //-5 included to left align 5 column field
+	// printf("%-5u %s\n", ptr->pw_uid, ptr->pw_name);
+
+	// }
+
+	ptr = getpwent();
+	result = ptr-> pw_name;
+
+	 endpwent();
+
+	/*
+	 * insert server code here
+	 */
+
+	return &result;
+}
 
 char **
 date_1_svc(long *argp, struct svc_req *rqstp)
@@ -46,34 +86,26 @@ date_1_svc(long *argp, struct svc_req *rqstp)
 double *
 cpu_usage_1_svc(void *argp, struct svc_req *rqstp)
 {
-  unsigned long long lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle;
-  FILE* file = fopen("/proc/stat", "r");
-  fscanf(file, "cpu %llu %llu %llu %llu", &lastTotalUser, &lastTotalUserLow,
-      &lastTotalSys, &lastTotalIdle);
+  long double uptimeMeasurement1, uptimeMeasurement2, idleTimeMeasurement1, idleTimeMeasurement2;
+  static double totalIdleTime, totalUptime, totalUtilTime, percent;
+
+  long number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
+
+  FILE* file = fopen("/proc/uptime", "r");
+  fscanf(file, "%Lf %Lf ", &uptimeMeasurement1, &idleTimeMeasurement1);
   fclose(file);
 
   sleep(2);
-  static double percent;
-  unsigned long long totalUser, totalUserLow, totalSys, totalIdle, total;
 
-  file = fopen("/proc/stat", "r");
-  fscanf(file, "cpu %llu %llu %llu %llu", &totalUser, &totalUserLow,
-      &totalSys, &totalIdle);
+  file = fopen("/proc/uptime", "r");
+  fscanf(file, "%Lf %Lf ", &uptimeMeasurement2, &idleTimeMeasurement2);
   fclose(file);
 
-  if (totalUser < lastTotalUser || totalUserLow < lastTotalUserLow ||
-      totalSys < lastTotalSys || totalIdle < lastTotalIdle){
-      //Overflow detection. Just skip this value.
-      percent = -1.0;
-  }
-  else{
-      total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) +
-          (totalSys - lastTotalSys);
-      percent = total;
-      total += (totalIdle - lastTotalIdle);
-      percent /= total;
-      percent *= 100;
-  }
+  totalIdleTime =  (idleTimeMeasurement2 / number_of_processors) - (idleTimeMeasurement1 / number_of_processors);
+  totalUptime = uptimeMeasurement2 - uptimeMeasurement1;
+  totalUtilTime = totalIdleTime / totalUptime;
+  totalUtilTime*=100;
+  percent = 100 - totalUtilTime;
 
   return &percent;
 }
@@ -81,39 +113,40 @@ cpu_usage_1_svc(void *argp, struct svc_req *rqstp)
 double *
 mem_usage_1_svc(void *argp, struct svc_req *rqstp)
 {
-  static double percent;
-  struct sysinfo memInfo;
-  sysinfo(&memInfo);
-  long long totalPhysMem = memInfo.totalram;
-  long long physMemUsed = memInfo.totalram - memInfo.freeram;
-  percent = (double)physMemUsed/(double)totalPhysMem*100;
-  //percent = totalPhysMem;
-  return &percent;
+	static double  percentageMemoryUsed;
+	
+	struct sysinfo systemInfo;
+	sysinfo(&systemInfo);
+
+	unsigned long totalSystemMemory = systemInfo.totalram;
+	unsigned long availableMemory = systemInfo.freeram;
+	double percentageMemoryFree;
+
+	percentageMemoryFree = ((double) availableMemory/ (double) totalSystemMemory);
+	percentageMemoryFree *= 100;
+
+	percentageMemoryUsed = 100 - percentageMemoryFree;
+	return &percentageMemoryUsed;
 }
 
 double *
 load_procs_per_min_1_svc(void *argp, struct svc_req *rqstp)
 {
-	static double  result;
-	struct passwd *ptr;
+	static double  processLoadedPerMin;
 
-	 setpwent();
+	struct sysinfo systemInfo;
+	sysinfo(&systemInfo);
 
-	while(1){
-		//returns NULL when it reaches the end
-		ptr = getpwent();
+	unsigned long procsLoadedOverLastMinute = systemInfo.loads[0];
+	processLoadedPerMin = (double) procsLoadedOverLastMinute;
 
-		if(ptr==NULL){
-		break;
-	}
+	return &processLoadedPerMin;
+}
 
-	//print out user ID and username
-	//-5 included to left align 5 column field
-	printf("%-5u %s\n", ptr->pw_uid, ptr->pw_name);
-
-	}
-
-	 endpwent();
+system_statistics *
+get_current_system_stats_1_svc(void *argp, struct svc_req *rqstp)
+{
+	static system_statistics  result;
 
 	/*
 	 * insert server code here
