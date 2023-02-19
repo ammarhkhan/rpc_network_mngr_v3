@@ -22,9 +22,11 @@ long get_response()
 	printf("                4. CPU Usage\n");
     printf("                5. Memory Usage\n");
     printf("                6. Load Procs Per Min\n");
-    printf("                7. Quit\n");
+	printf("                7. Get Current System Statistics\n");
+    printf("                8. Get Users Logged In\n");
+    printf("                9. Quit\n");
     printf("-------------------------------------------\n");
-    printf("               Choice (1-7):");
+    printf("               Choice (1-9):");
     scanf("%ld",&choice);
     printf("===========================================\n");
     return(choice);
@@ -76,19 +78,44 @@ void printLocsPerMin(CLIENT *clnt)
   printf("1 min load average: %d\n\n",res);
 }
 
+void printCurrentStats(CLIENT *clnt)
+{
+  char** sresult;
+  if ((sresult = get_current_system_stats_1(NULL, clnt)) == NULL) 
+  { 
+	clnt_perror (clnt, "call failed");
+    return;
+  }
+  printf("%s\n\n",*sresult);
+}
+
+void printUserLogins(CLIENT *clnt)
+{
+  char** sresult;
+  if ((sresult = user_logins_1(NULL, clnt)) == NULL) 
+  { 
+	clnt_perror (clnt, "call failed");
+    return;
+  }
+  printf("%s\n\n",*sresult);
+}
 
 void
 network_mngr_prog_1(char *host)
 {
 	CLIENT *clnt;
 	char * *result_1;
+	char *user_logins_1_arg;
+	char * *result_2;
 	long  date_1_arg;
-	double  *result_2;
-	char *cpu_usage_1_arg;
 	double  *result_3;
-	char *mem_usage_1_arg;
+	char *cpu_usage_1_arg;
 	double  *result_4;
+	char *mem_usage_1_arg;
+	double  *result_5;
 	char *load_procs_per_min_1_arg;
+	system_statistics  *result_6;
+	char *get_current_system_stats_1_arg;
 	long    response;  /* user response                           */
 
 
@@ -101,40 +128,42 @@ network_mngr_prog_1(char *host)
 #endif	/* DEBUG */
 
   response = get_response();
-  while(response!=7)
+  while(response!=9)
   {
     switch(response)
     {
       case 1: case 2: case 3:
         printDate(clnt, &response);
-      break;
+      	break;
       case 4:
         printCpuUsage(clnt);
-      break;
+      	break;
       case 5:
         printMemoryUsage(clnt);
-      break;
+      	break;
       case 6:
         printLocsPerMin(clnt);
+		break;
+	  case 7:
+	  	printCurrentStats(clnt);
+		break;
+	  case 8:
+	  	printUserLogins(clnt);
+		break;
       break;
     }
     response = get_response();
   }
-
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */
 }
 
+
 int
 main (int argc, char *argv[])
 {
-	CLIENT  *cl;        /* RPC handle */
-    char    *host;
-    char    **sresult;  /* return value from date_1()      */
-    char    s[MAX_LEN];    /* character array to hold output */
-    long    response;  /* user response                           */
-    long    *lresult;    /* pointer to user response          */
+	char *host;
 
 	if (argc < 2) {
 		printf ("usage: %s server_host\n", argv[0]);
