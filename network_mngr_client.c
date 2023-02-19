@@ -6,23 +6,91 @@
 
 #include "network_mngr.h"
 
+#define MAX_LEN 100
+long get_response(void);
+
+long get_response()
+{
+    long choice;
+
+    printf("===========================================\n");
+    printf("                   Menu: \n");
+    printf("-------------------------------------------\n");
+    printf("                1. Date\n");
+    printf("                2. Time\n");
+    printf("                3. Both\n");
+	printf("                4. CPU Usage\n");
+    printf("                5. Memory Usage\n");
+    printf("                6. Load Procs Per Min\n");
+    printf("                7. Quit\n");
+    printf("-------------------------------------------\n");
+    printf("               Choice (1-7):");
+    scanf("%ld",&choice);
+    printf("===========================================\n");
+    return(choice);
+}
+
+void printDate(CLIENT *clnt, long *option)
+{
+  char** sresult;
+  if ((sresult = date_1(option, clnt)) == NULL) 
+  { 
+	clnt_perror (clnt, "call failed");
+    return;
+  }
+  printf("%s\n\n",*sresult);
+}
+
+void printCpuUsage(CLIENT *clnt)
+{
+  double* sresult;
+  if ((sresult = cpu_usage_1(NULL,clnt)) == NULL) 
+  { 
+	clnt_perror (clnt, "call failed");
+    return;
+  }
+  printf("CPU usage percentage: %lf %% \n\n",*sresult);
+}
+
+
+void printMemoryUsage(CLIENT *clnt)
+{
+  double* sresult;
+  if ((sresult = mem_usage_1(NULL,clnt)) == NULL) 
+  { 
+	clnt_perror (clnt, "call failed");
+    return;
+  }
+  printf("RAM usage precentage: %lf %% \n\n",*sresult);
+}
+
+void printLocsPerMin(CLIENT *clnt)
+{
+  double* sresult;
+  if ((sresult = load_procs_per_min_1(NULL,clnt)) == NULL) 
+  { 
+	clnt_perror (clnt, "call failed");
+    return;
+  }
+  int res = (int)*sresult;
+  printf("1 min load average: %d\n\n",res);
+}
+
 
 void
 network_mngr_prog_1(char *host)
 {
 	CLIENT *clnt;
 	char * *result_1;
-	char *user_logins_1_arg;
-	char * *result_2;
 	long  date_1_arg;
-	double  *result_3;
+	double  *result_2;
 	char *cpu_usage_1_arg;
-	double  *result_4;
+	double  *result_3;
 	char *mem_usage_1_arg;
-	double  *result_5;
+	double  *result_4;
 	char *load_procs_per_min_1_arg;
-	system_statistics  *result_6;
-	char *get_current_system_stats_1_arg;
+	long    response;  /* user response                           */
+
 
 #ifndef	DEBUG
 	clnt = clnt_create (host, NETWORK_MNGR_PROG, NETWORK_MNGR, "udp");
@@ -32,40 +100,41 @@ network_mngr_prog_1(char *host)
 	}
 #endif	/* DEBUG */
 
-	result_1 = user_logins_1((void*)&user_logins_1_arg, clnt);
-	if (result_1 == (char **) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_2 = date_1(&date_1_arg, clnt);
-	if (result_2 == (char **) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_3 = cpu_usage_1((void*)&cpu_usage_1_arg, clnt);
-	if (result_3 == (double *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_4 = mem_usage_1((void*)&mem_usage_1_arg, clnt);
-	if (result_4 == (double *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_5 = load_procs_per_min_1((void*)&load_procs_per_min_1_arg, clnt);
-	if (result_5 == (double *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_6 = get_current_system_stats_1((void*)&get_current_system_stats_1_arg, clnt);
-	if (result_6 == (system_statistics *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
+  response = get_response();
+  while(response!=7)
+  {
+    switch(response)
+    {
+      case 1: case 2: case 3:
+        printDate(clnt, &response);
+      break;
+      case 4:
+        printCpuUsage(clnt);
+      break;
+      case 5:
+        printMemoryUsage(clnt);
+      break;
+      case 6:
+        printLocsPerMin(clnt);
+      break;
+    }
+    response = get_response();
+  }
+
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */
 }
 
-
 int
 main (int argc, char *argv[])
 {
-	char *host;
+	CLIENT  *cl;        /* RPC handle */
+    char    *host;
+    char    **sresult;  /* return value from date_1()      */
+    char    s[MAX_LEN];    /* character array to hold output */
+    long    response;  /* user response                           */
+    long    *lresult;    /* pointer to user response          */
 
 	if (argc < 2) {
 		printf ("usage: %s server_host\n", argv[0]);
