@@ -6,118 +6,21 @@
 
 #include "network_mngr.h"
 
-#define MAX_LEN 100
-long get_response(void);
-
-long get_response()
-{
-    long choice;
-
-    printf("===========================================\n");
-    printf("                   Menu: \n");
-    printf("-------------------------------------------\n");
-    printf("                1. Date\n");
-    printf("                2. Time\n");
-    printf("                3. Both\n");
-	printf("                4. CPU Usage\n");
-    printf("                5. Memory Usage\n");
-    printf("                6. Load Procs Per Min\n");
-	printf("                7. Get Current System Statistics\n");
-    printf("                8. Get Users Logged In\n");
-    printf("                9. Quit\n");
-    printf("-------------------------------------------\n");
-    printf("               Choice (1-9):");
-    scanf("%ld",&choice);
-    printf("===========================================\n");
-    return(choice);
-}
-
-void printDate(CLIENT *clnt, long *option)
-{
-  char** sresult;
-  if ((sresult = date_1(option, clnt)) == NULL) 
-  { 
-	clnt_perror (clnt, "call failed");
-    return;
-  }
-  printf("%s\n\n",*sresult);
-}
-
-void printCpuUsage(CLIENT *clnt)
-{
-  double* sresult;
-  if ((sresult = cpu_usage_1(NULL,clnt)) == NULL) 
-  { 
-	clnt_perror (clnt, "call failed");
-    return;
-  }
-  printf("CPU usage percentage: %lf %% \n\n",*sresult);
-}
-
-
-void printMemoryUsage(CLIENT *clnt)
-{
-  double* sresult;
-  if ((sresult = mem_usage_1(NULL,clnt)) == NULL) 
-  { 
-	clnt_perror (clnt, "call failed");
-    return;
-  }
-  printf("RAM usage precentage: %lf %% \n\n",*sresult);
-}
-
-void printLocsPerMin(CLIENT *clnt)
-{
-  double* sresult;
-  if ((sresult = load_procs_per_min_1(NULL,clnt)) == NULL) 
-  { 
-	clnt_perror (clnt, "call failed");
-    return;
-  }
-  int res = (int)*sresult;
-  printf("1 min load average: %d\n\n",res);
-}
-
-void printCurrentStats(CLIENT *clnt)
-{
-  char** sresult;
-  if ((sresult = get_current_system_stats_1(NULL, clnt)) == NULL) 
-  { 
-	clnt_perror (clnt, "call failed");
-    return;
-  }
-  printf("%s\n\n",*sresult);
-}
-
-void printUserLogins(CLIENT *clnt)
-{
-  char** sresult;
-  if ((sresult = user_logins_1(NULL, clnt)) == NULL) 
-  { 
-	clnt_perror (clnt, "call failed");
-    return;
-  }
-  printf("%s\n\n",*sresult);
-}
 
 void
 network_mngr_prog_1(char *host)
 {
 	CLIENT *clnt;
 	char * *result_1;
-	char *user_logins_1_arg;
-	char * *result_2;
 	long  date_1_arg;
-	double  *result_3;
+	double  *result_2;
 	char *cpu_usage_1_arg;
-	double  *result_4;
+	double  *result_3;
 	char *mem_usage_1_arg;
-	double  *result_5;
+	double  *result_4;
 	char *load_procs_per_min_1_arg;
-	system_statistics  *result_6;
-	char *get_current_system_stats_1_arg;
-	long    response;  /* user response                           */
-
+	char * *result_5;
+	char *user_logins_1_arg;
 
 #ifndef	DEBUG
 	clnt = clnt_create (host, NETWORK_MNGR_PROG, NETWORK_MNGR, "udp");
@@ -127,33 +30,26 @@ network_mngr_prog_1(char *host)
 	}
 #endif	/* DEBUG */
 
-  response = get_response();
-  while(response!=9)
-  {
-    switch(response)
-    {
-      case 1: case 2: case 3:
-        printDate(clnt, &response);
-      	break;
-      case 4:
-        printCpuUsage(clnt);
-      	break;
-      case 5:
-        printMemoryUsage(clnt);
-      	break;
-      case 6:
-        printLocsPerMin(clnt);
-		break;
-	  case 7:
-	  	printCurrentStats(clnt);
-		break;
-	  case 8:
-	  	printUserLogins(clnt);
-		break;
-      break;
-    }
-    response = get_response();
-  }
+	result_1 = date_1(&date_1_arg, clnt);
+	if (result_1 == (char **) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	result_2 = cpu_usage_1((void*)&cpu_usage_1_arg, clnt);
+	if (result_2 == (double *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	result_3 = mem_usage_1((void*)&mem_usage_1_arg, clnt);
+	if (result_3 == (double *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	result_4 = load_procs_per_min_1((void*)&load_procs_per_min_1_arg, clnt);
+	if (result_4 == (double *) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	result_5 = user_logins_1((void*)&user_logins_1_arg, clnt);
+	if (result_5 == (char **) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
 #ifndef	DEBUG
 	clnt_destroy (clnt);
 #endif	 /* DEBUG */

@@ -10,21 +10,6 @@
 static struct timeval TIMEOUT = { 25, 0 };
 
 char **
-user_logins_1(void *argp, CLIENT *clnt)
-{
-	static char *clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call (clnt, USER_LOGINS,
-		(xdrproc_t) xdr_void, (caddr_t) argp,
-		(xdrproc_t) xdr_wrapstring, (caddr_t) &clnt_res,
-		TIMEOUT) != RPC_SUCCESS) {
-		return (NULL);
-	}
-	return (&clnt_res);
-}
-
-char **
 date_1(long *argp, CLIENT *clnt)
 {
 	static char *clnt_res;
@@ -84,15 +69,15 @@ load_procs_per_min_1(void *argp, CLIENT *clnt)
 	return (&clnt_res);
 }
 
-system_statistics *
-get_current_system_stats_1(void *argp, CLIENT *clnt)
+char **
+user_logins_1(void *argp, CLIENT *clnt)
 {
-	static system_statistics clnt_res;
+	static char *clnt_res;
 
 	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call (clnt, GET_CURRENT_SYSTEM_STATS,
+	if (clnt_call (clnt, USER_LOGINS,
 		(xdrproc_t) xdr_void, (caddr_t) argp,
-		(xdrproc_t) xdr_system_statistics, (caddr_t) &clnt_res,
+		(xdrproc_t) xdr_wrapstring, (caddr_t) &clnt_res,
 		TIMEOUT) != RPC_SUCCESS) {
 		return (NULL);
 	}

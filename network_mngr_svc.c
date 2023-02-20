@@ -31,12 +31,6 @@ network_mngr_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
 		return;
 
-	case USER_LOGINS:
-		_xdr_argument = (xdrproc_t) xdr_void;
-		_xdr_result = (xdrproc_t) xdr_wrapstring;
-		local = (char *(*)(char *, struct svc_req *)) user_logins_1_svc;
-		break;
-
 	case DATE:
 		_xdr_argument = (xdrproc_t) xdr_long;
 		_xdr_result = (xdrproc_t) xdr_wrapstring;
@@ -61,10 +55,10 @@ network_mngr_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		local = (char *(*)(char *, struct svc_req *)) load_procs_per_min_1_svc;
 		break;
 
-	case GET_CURRENT_SYSTEM_STATS:
+	case USER_LOGINS:
 		_xdr_argument = (xdrproc_t) xdr_void;
-		_xdr_result = (xdrproc_t) xdr_system_statistics;
-		local = (char *(*)(char *, struct svc_req *)) get_current_system_stats_1_svc;
+		_xdr_result = (xdrproc_t) xdr_wrapstring;
+		local = (char *(*)(char *, struct svc_req *)) user_logins_1_svc;
 		break;
 
 	default:

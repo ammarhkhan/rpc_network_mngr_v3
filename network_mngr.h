@@ -14,68 +14,44 @@ extern "C" {
 #endif
 
 
-struct system_statistics {
-	char *date;
-	double *cpu_usage;
-	double *mem_usage;
-	double *load_procs_per_min;
-};
-typedef struct system_statistics system_statistics;
-
 #define NETWORK_MNGR_PROG 0x31234567
 #define NETWORK_MNGR 1
 
 #if defined(__STDC__) || defined(__cplusplus)
-#define USER_LOGINS 1
-extern  char ** user_logins_1(void *, CLIENT *);
-extern  char ** user_logins_1_svc(void *, struct svc_req *);
-#define DATE 2
+#define DATE 1
 extern  char ** date_1(long *, CLIENT *);
 extern  char ** date_1_svc(long *, struct svc_req *);
-#define CPU_USAGE 3
+#define CPU_USAGE 2
 extern  double * cpu_usage_1(void *, CLIENT *);
 extern  double * cpu_usage_1_svc(void *, struct svc_req *);
-#define MEM_USAGE 4
+#define MEM_USAGE 3
 extern  double * mem_usage_1(void *, CLIENT *);
 extern  double * mem_usage_1_svc(void *, struct svc_req *);
-#define LOAD_PROCS_PER_MIN 5
+#define LOAD_PROCS_PER_MIN 4
 extern  double * load_procs_per_min_1(void *, CLIENT *);
 extern  double * load_procs_per_min_1_svc(void *, struct svc_req *);
-#define GET_CURRENT_SYSTEM_STATS 6
-extern  system_statistics * get_current_system_stats_1(void *, CLIENT *);
-extern  system_statistics * get_current_system_stats_1_svc(void *, struct svc_req *);
+#define USER_LOGINS 5
+extern  char ** user_logins_1(void *, CLIENT *);
+extern  char ** user_logins_1_svc(void *, struct svc_req *);
 extern int network_mngr_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
-#define USER_LOGINS 1
-extern  char ** user_logins_1();
-extern  char ** user_logins_1_svc();
-#define DATE 2
+#define DATE 1
 extern  char ** date_1();
 extern  char ** date_1_svc();
-#define CPU_USAGE 3
+#define CPU_USAGE 2
 extern  double * cpu_usage_1();
 extern  double * cpu_usage_1_svc();
-#define MEM_USAGE 4
+#define MEM_USAGE 3
 extern  double * mem_usage_1();
 extern  double * mem_usage_1_svc();
-#define LOAD_PROCS_PER_MIN 5
+#define LOAD_PROCS_PER_MIN 4
 extern  double * load_procs_per_min_1();
 extern  double * load_procs_per_min_1_svc();
-#define GET_CURRENT_SYSTEM_STATS 6
-extern  system_statistics * get_current_system_stats_1();
-extern  system_statistics * get_current_system_stats_1_svc();
+#define USER_LOGINS 5
+extern  char ** user_logins_1();
+extern  char ** user_logins_1_svc();
 extern int network_mngr_prog_1_freeresult ();
-#endif /* K&R C */
-
-/* the xdr functions */
-
-#if defined(__STDC__) || defined(__cplusplus)
-extern  bool_t xdr_system_statistics (XDR *, system_statistics*);
-
-#else /* K&R C */
-extern bool_t xdr_system_statistics ();
-
 #endif /* K&R C */
 
 #ifdef __cplusplus
