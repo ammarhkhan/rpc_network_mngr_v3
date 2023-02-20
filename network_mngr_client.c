@@ -102,7 +102,6 @@ network_mngr_prog_1(char *host)
 	char *mem_usage_1_arg;
 	double  *result_5;
 	char *load_procs_per_min_1_arg;
-	char *get_current_system_stats_1_arg;
 	long    response;  /* user response                           */
 
 
