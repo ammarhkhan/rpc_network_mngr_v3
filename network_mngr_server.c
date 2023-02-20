@@ -11,42 +11,27 @@
 #include <sys/sysinfo.h>
 #include <pwd.h>
 #include <string.h>
+#include <utmp.h>
 
 #define MAX_LEN 100
 
 char **
 user_logins_1_svc(void *argp, struct svc_req *rqstp)
 {
-	static char * result;
-	struct passwd *ptr;
+    static char *result;
+    int total = 0;
 
-	 setpwent();
+    result = malloc(total * sizeof(char *));
 
-	// while(1){
-	// 	ptr = getpwent();
-
-	// 	if(ptr==NULL){
-	// 	break;
-	// }
-
-	// char *userName = ptr->pw_name;
-
-	// strcpy(result, userName);
-
-	// //print out user ID and username
-	// //-5 included to left align 5 column field
-	// printf("%-5u %s\n", ptr->pw_uid, ptr->pw_name);
-
-	// }
-
-	ptr = getpwent();
-	result = ptr-> pw_name;
-
-	 endpwent();
-
-	/*
-	 * insert server code here
-	 */
+    struct utmp *data;
+    data = getutent();
+    while(data != NULL)
+    {
+            char * line;
+            asprintf(&line, "Username: %s\n", data->ut_user);
+            asprintf(&result, "%s%s", result, line);
+            data = getutent();
+    }
 
 	return &result;
 }

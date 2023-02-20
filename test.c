@@ -21,13 +21,11 @@ char ** returnUserNames(){
 
     struct utmp *data;
     data = getutent();
-    int i = 0 ;
     while(data != NULL)
     {
-            int length = strlen(data->ut_user);
-            realloc(result, (length * sizeof(char)) + sizeof(result));
-            strncat(result, data->ut_user, length);
-            i++;
+            char * line;
+            asprintf(&line, "Username: %s\n", data->ut_user);
+            asprintf(&result, "%s%s", result, line);
             data = getutent();
     }
 
@@ -42,7 +40,7 @@ main (int argc, char *argv[])
 
     result = returnUserNames();
 
-    printf("size %s", *result);
+    printf("%s", *result);
 
 exit (0);
 }
