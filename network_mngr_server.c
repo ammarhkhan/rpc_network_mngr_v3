@@ -117,13 +117,14 @@ mem_usage_1_svc(void *argp, struct svc_req *rqstp)
 double *
 load_procs_per_min_1_svc(void *argp, struct svc_req *rqstp)
 {
-	static double  processLoadedPerMin;
+	static double processLoadedPerMin;
 
 	struct sysinfo systemInfo;
 	sysinfo(&systemInfo);
 
-	unsigned long procsLoadedOverLastMinute = systemInfo.loads[0];
-	processLoadedPerMin = (double) procsLoadedOverLastMinute;
+	FILE* file = fopen("/proc/loadavg", "r");
+  	fscanf(file, "%lf ", &processLoadedPerMin);
+  	fclose(file);
 
 	return &processLoadedPerMin;
 }

@@ -74,7 +74,7 @@ void printLocsPerMin(CLIENT *clnt)
     return;
   }
   int res = (int)*sresult;
-  printf("1 min load average: %d\n\n",res);
+  printf("1 min load average: %lf\n\n", *sresult);
 }
 
 void printUserLogins(CLIENT *clnt)

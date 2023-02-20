@@ -13,34 +13,18 @@
 #include <string.h>
 #include <utmp.h>
 
-char ** returnUserNames(){
-    static char *result;
-    int total = 0;
-
-    result = malloc(total * sizeof(char *));
-
-    struct utmp *data;
-    data = getutent();
-    while(data != NULL)
-    {
-            char * line;
-            asprintf(&line, "Username: %s\n", data->ut_user);
-            asprintf(&result, "%s%s", result, line);
-            data = getutent();
-    }
-
-    return &result;
-}
-
 int
 main (int argc, char *argv[])
 {
-	static char **result;
-    int i = 0;
+	static double processLoadedPerMin;
 
-    result = returnUserNames();
+	struct sysinfo systemInfo;
+	sysinfo(&systemInfo);
 
-    printf("%s", *result);
+	FILE* file = fopen("/proc/loadavg", "r");
+  	fscanf(file, "%lf ", &processLoadedPerMin);
+  	fclose(file);
 
+    printf("Yo %lf", processLoadedPerMin);
 exit (0);
 }
