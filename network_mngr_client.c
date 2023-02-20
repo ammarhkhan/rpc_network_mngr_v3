@@ -50,7 +50,7 @@ void printCpuUsage(CLIENT *clnt)
 	clnt_perror (clnt, "call failed");
     return;
   }
-  printf("CPU usage percentage: %lf %% \n\n",*sresult);
+  printf("CPU Usage Perc.: %lf %% \n\n",*sresult);
 }
 
 
@@ -62,7 +62,7 @@ void printMemoryUsage(CLIENT *clnt)
 	clnt_perror (clnt, "call failed");
     return;
   }
-  printf("RAM usage precentage: %lf %% \n\n",*sresult);
+  printf("RAM Usage Perc.: %lf %% \n\n",*sresult);
 }
 
 void printLocsPerMin(CLIENT *clnt)
@@ -74,7 +74,7 @@ void printLocsPerMin(CLIENT *clnt)
     return;
   }
   int res = (int)*sresult;
-  printf("1 min load average: %lf\n\n", *sresult);
+  printf("Last Minute Load Average: %lf\n\n", *sresult);
 }
 
 void printUserLogins(CLIENT *clnt)
